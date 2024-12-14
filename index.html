@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>WAVE CHRISTMAS GIFT</title>
+    <!-- Matter.js 라이브러리 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+  </head>
+  <body>
+    <canvas id="snowCanvas"></canvas>
+    <h1>🎄 WAVE CHRISTMAS GIFT 🎄</h1>
+    <div class="input-container">
+      <input type="text" id="nameInput" placeholder="NAME" />
+      <input type="number" id="voteInput" placeholder="VOTE" min="1" max="30" />
+      <button id="addButton">ADD</button>
+    </div>
+    <div class="box-container">
+      <div id="randomBox" class="random-box"></div>
+    </div>
+    <div class="buttons">
+      <button id="shuffleButton">SHUFFLE</button>
+      <button id="resetButton">RESET</button>
+    </div>
+    <!-- 모달 -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <p id="selectedName"></p>
+        <button id="closeModal">CLOSE</button>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
