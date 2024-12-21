@@ -71,11 +71,11 @@ const closeModal = document.getElementById("closeModal");
 // 동그란 픽셀 느낌의 SVG를 생성하는 함수
 function generatePixelBallSVG(color) {
   return `
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-      <circle cx="20" cy="20" r="20" fill="${color}" />
-      <circle cx="20" cy="20" r="15" fill="${lightenColor(color, 20)}" />
-      <circle cx="20" cy="20" r="10" fill="${lightenColor(color, 40)}" />
-      <circle cx="20" cy="20" r="5" fill="${lightenColor(color, 60)}" />
+    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="30" fill="${color}" />
+      <circle cx="30" cy="30" r="25" fill="${lightenColor(color, 20)}" />
+      <circle cx="30" cy="30" r="20" fill="${lightenColor(color, 40)}" />
+      <circle cx="30" cy="30" r="15" fill="${lightenColor(color, 60)}" />
     </svg>
   `;
 }
@@ -86,15 +86,15 @@ function lightenColor(color, percent) {
     r = Math.min(255, (num >> 16) + percent),
     g = Math.min(255, ((num >> 8) & 0x00ff) + percent),
     b = Math.min(255, (num & 0x0000ff) + percent);
-  return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
-// 공 추가 이벤트 리스너
-addButton.addEventListener('click', () => {
+// 공 추가 함수 정의
+function addBall() {
   const name = nameInput.value.trim();
-  let vote = parseInt(voteInput.value, 10);
+  let vote = parseInt(voteInput.value, 10) || 1;
 
-  if (name && vote > 0) {
+  if (name) {
     if (vote > 30) {
       alert('투표 수는 최대 30까지만 입력할 수 있습니다!');
       vote = 30;
@@ -103,28 +103,44 @@ addButton.addEventListener('click', () => {
     for (let i = 0; i < vote; i++) {
       const color = colors[Math.floor(Math.random() * colors.length)];
       const svgData = generatePixelBallSVG(color);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
       const url = URL.createObjectURL(svgBlob);
 
-      const ball = Bodies.circle(boxWidth / 2, 50, 20, {
+      const ball = Bodies.circle(boxWidth / 2, 50, 30, {
         restitution: 0.8, // 탄성 적용
         render: {
           sprite: {
             texture: url,
             xScale: 1,
-            yScale: 1
-          }
+            yScale: 1,
+          },
         },
-        label: name
+        label: name,
       });
 
       World.add(engine.world, ball);
     }
 
-    nameInput.value = '';
-    voteInput.value = '';
+    nameInput.value = "";
+    voteInput.value = "";
   } else {
-    alert('이름과 투표수를 정확히 입력해 주세요!');
+    alert("이름을 입력해 주세요!");
+  }
+}
+
+// 클릭 이벤트 리스너
+addButton.addEventListener("click", addBall);
+
+// 엔터키 이벤트 리스너
+nameInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    voteInput.focus();
+  }
+});
+
+voteInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    addBall();
   }
 });
 
@@ -134,18 +150,27 @@ shuffleButton.addEventListener("click", () => {
 
   bodies.forEach((body) => {
     if (!body.isStatic) {
-      const forceMagnitude = 0.7;
+      // 힘 적용
+      const forceMagnitude = 1.2      ;
       Matter.Body.applyForce(body, body.position, {
         x: (Math.random() - 0.5) * forceMagnitude,
         y: (Math.random() - 0.5) * forceMagnitude,
       });
+
+      // 새로운 색상 적용
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const svgData = generatePixelBallSVG(color);
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(svgBlob);
+
+      body.render.sprite.texture = url;
     }
   });
 
   shuffleButton.disabled = true;
   setTimeout(() => {
     shuffleButton.disabled = false;
-  }, 3000);
+  }, 1000);
 });
 
 // 리셋 버튼 이벤트 리스너
@@ -202,14 +227,40 @@ render.canvas.addEventListener("click", (event) => {
   if (clickedBody) {
     // 초기 모달 상태: 로딩 애니메이션 표시
     closeModal.style.display = "none";
-    selectedName.innerHTML = `<span class="loading" style="font-size: 50px; color: #888; font-weight: bold; animation: blink 1s infinite;">🥁두구두구🥁</span>`;
+    selectedName.innerHTML = `
+      <span class="loading" style="
+        font-size: 50px; 
+        color: #ff5555; 
+        font-weight: bold; 
+        display: inline-block;
+        animation: shake 0.5s infinite, scale 1s infinite, blink 1s infinite;
+        transform-origin: center;
+      ">
+        🥁 두구두구두구 🥁
+      </span>
+      <style>
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        @keyframes scale {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      </style>
+    `;
     modal.style.display = "flex";
 
     // 2초 후에 선택된 이름 표시
     setTimeout(() => {
       selectedName.textContent = `🎉 ${clickedBody.label} 🎉`;
       closeModal.style.display = "flex";
-    }, 2000);
+    }, 3000);
   }
 });
 
